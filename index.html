@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <title>Wikipedia Title Search</title>
+</head>
+<body>
+    <div class="jumbotron">
+        <div class="container">
+            <h1>Wikipedia Title Search</h1>
+        </div>
+    </div>
+    <div class="container">
+        <input class="form-control" type="text" id="query" onkeyup="searchRequest()" />
+        <br />
+        <div class="container">
+            <ol id="result"></ol>
+        </div>
+    </div>
+</body>
+
+</html>
+<script type="text/javascript">
+    function searchRequest() {
+        var query = $("#query").val().trim().replace(/ /g,'_');
+        $.ajax({
+            type: "POST",
+            url: "WebService1.asmx/Search",
+            data: "{input:'" + query + "'}",
+            dataType: 'json',
+            contentType: "application/json; charset=utf-8",
+            success: function (res) {
+                var data = res.d;
+                var parsedData = JSON.parse(data);
+
+                if (query) {
+                    $("#result").html("");
+                    if (parsedData.length <= 0) {
+                        $("#result").html("No Titles Found<br>Note that only queries that start with 'a' and 'b' will work due to lack of RAM!");
+                    } else {
+                        for (i = 0; i < parsedData.length; i++) {
+                            $("#result").append("<li><a href='https://en.wikipedia.org/w/index.php?search="
+                                + parsedData[i].replace(/_/g, "+") + "' >"
+                                + parsedData[i].replace(/_/g, " ") + "</a></li>");
+                        }
+                    }
+                } else {
+                    $("#result").html("");
+                }
+            },
+            error: function (xhr, stat, e) {
+                console.log("ERROR " + xhr + ": " + stat + " - " + e);
+            }
+        })
+    }
+</script>
